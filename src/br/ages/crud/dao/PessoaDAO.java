@@ -143,7 +143,7 @@ public class PessoaDAO {
 	 * @throws PersistenciaException
 	 * @throws SQLException
 	 */
-	public void cadstrarPessoa(PessoaDTO pessoaDTO) throws PersistenciaException, SQLException {
+	public void cadastrarPessoa(PessoaDTO pessoaDTO) throws PersistenciaException, SQLException {
 		Connection conexao = null;
 		try {
 			Integer idPessoa = null;

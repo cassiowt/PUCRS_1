@@ -17,6 +17,12 @@ import br.ages.crud.util.ConexaoUtil;
  */
 public class UsuarioDAO {
 
+	private ArrayList<UsuarioDTO> listarUsuarios;
+
+	public UsuarioDAO() {
+		listarUsuarios = new ArrayList<>();
+	}
+	
 	/**
 	 * Autentica o usuário
 	 * @author cassio trindade 
@@ -48,14 +54,13 @@ public class UsuarioDAO {
 	}
 	
 	/**
-	 * Lista as pessoas da base
+	 * Lista os Usuarios da basee
 	 * 
 	 * @return
 	 * @throws PersistenciaException 
 	 * @throws SQLException 
 	 */
 	public List<UsuarioDTO> listarUsuarios() throws PersistenciaException, SQLException {
-		ArrayList<UsuarioDTO> listarUsuarios = new ArrayList<>();
 		Connection conexao = null;
 
 		try {

@@ -102,7 +102,7 @@ public class PessoaBO {
 	public void cadastraPessoa(PessoaDTO pessoaDTO) throws NegocioException, SQLException {
 		
 		try {
-			pessoaDAO.cadstrarPessoa(pessoaDTO);
+			pessoaDAO.cadastrarPessoa(pessoaDTO);
 		} catch (PersistenciaException e) {
 			e.printStackTrace();
 			throw new NegocioException(e);

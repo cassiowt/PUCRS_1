@@ -19,7 +19,7 @@ public class ListUserCommand implements Command {
 	@Override
 	public String execute(HttpServletRequest request) throws SQLException {
 		this.usuarioBO = new UsuarioBO();
-		proxima = "list.jsp";
+		proxima = "listUser.jsp";
 
 		try {
 			List<UsuarioDTO> listaUsuarios = usuarioBO.listarUsuario();

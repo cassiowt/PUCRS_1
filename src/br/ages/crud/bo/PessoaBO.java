@@ -1,6 +1,7 @@
 package br.ages.crud.bo;
 
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -126,7 +127,50 @@ public class PessoaBO {
 		}
 		
 		return listPessoas;
-		
-		
+	}
+	/**
+	 * Método de remoção da pessoaDTO passada por parâmetro.
+	 * 
+	 * @param idPessoa
+	 * @throws NegocioException
+	 */
+	public void removerPessoa(Integer idPessoa) throws NegocioException {
+		try {
+			pessoaDAO.removerPessoa(idPessoa);
+		} catch (PersistenciaException e) {
+			e.printStackTrace();
+			throw new NegocioException(e);
+		}
+	}
+	/**
+	 * Método de atualização da pessoaDTO passada por parâmetro.
+	 * 
+	 * @param idPessoa
+	 * @throws NegocioException
+	 * @throws SQLException 
+	 * @throws ParseException 
+	 */
+	public void atualizarPessoa(PessoaDTO pessoaDTO) throws NegocioException, ParseException, SQLException {
+		try {
+			pessoaDAO.atualizarPessoa(pessoaDTO);
+		} catch (PersistenciaException e) {
+			e.printStackTrace();
+			throw new NegocioException(e);
+		}
+	}
+	/**
+	 * Método de consulta de uma pessoa pelo seu id passado.
+	 * 
+	 * @param idPessoa
+	 * @return
+	 * @throws NegocioException
+	 */
+	public PessoaDTO consultarPessoaPorId(Integer idPessoa) throws NegocioException {
+		try {
+			return pessoaDAO.consultarPessoaPorId(idPessoa);
+		} catch (PersistenciaException e) {
+			e.printStackTrace();
+			throw new NegocioException(e);
+		}
 	}
 }

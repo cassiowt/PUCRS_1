@@ -20,7 +20,14 @@ public class AddCommand implements Command {
 	public String execute(HttpServletRequest request) throws SQLException {
 
 		cadastroDao = new PessoaDAO();
-		proxima = "add.jsp";
+		
+		String isEdit = request.getParameter("isEdit");
+		if (isEdit != null && !"".equals(isEdit)) {
+			proxima = "editPeople.jsp";
+		} else {
+			proxima = "add.jsp";
+		}
+		
 		String getCidades = request.getParameter("getCidades");
 
 		try {

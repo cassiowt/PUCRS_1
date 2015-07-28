@@ -10,12 +10,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import br.ages.crud.command.AddCommand;
 import br.ages.crud.command.AddPeopleCommand;
 import br.ages.crud.command.Command;
+import br.ages.crud.command.EditPeopleCommand;
 import br.ages.crud.command.ListPeopleCommand;
 import br.ages.crud.command.ListUserCommand;
 import br.ages.crud.command.LoginCommand;
-import br.ages.crud.command.AddCommand;
+import br.ages.crud.command.RemoverPessoaCommand;
+import br.ages.crud.command.UpdatePeopleCommand;
 
 @WebServlet("/main")
 public class MainServlet extends HttpServlet {
@@ -30,6 +33,10 @@ public class MainServlet extends HttpServlet {
 		comandos.put("addPeople", new AddPeopleCommand());
 		comandos.put("list", new ListPeopleCommand());
 		comandos.put("listUser", new ListUserCommand());
+		comandos.put("removerPessoa", new RemoverPessoaCommand());
+		comandos.put("editPeople", new EditPeopleCommand());
+		comandos.put("updatePeople", new UpdatePeopleCommand());
+	
 	}
 
 	@Override

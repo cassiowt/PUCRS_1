@@ -53,12 +53,12 @@
 							<td class="alignLeft">   <%=pessoa.getEndereco().getCidade().getUfDTO().getDescricao() %></td>
 
 							<td class="alignCenter">
-								<a href="" title="Editar">
+								<a href="main?acao=editPeople&id_pessoa=<%= pessoa.getIdPessoa() %>" title="Editar">
 									<i class="fa fa-pencil fa-2x"></i>
 								</a>
 							</td>
 							<td class="alignCenter">
-								<a href="" title="Deletear" >
+								<a href="main?acao=removerPessoa&id_pessoa=<%= pessoa.getIdPessoa() %>" title="Deletear" >
 									<i class="fa fa-trash-o fa-2x"></i>
 								</a>
 							</td>

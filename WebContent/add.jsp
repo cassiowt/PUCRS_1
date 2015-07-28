@@ -78,7 +78,7 @@
 					<tr>
 						<td>Mini-Resume</td>
 						<td>
-							<textarea cols="40" rows="5" id="mini" name="mini" ></textarea>  <%-- value="${param.mini}" --%>
+							<textarea cols="40" rows="5" id="mini" name="mini" >${param.mini}</textarea> 
 						</td>
 					</tr>
 				</table>

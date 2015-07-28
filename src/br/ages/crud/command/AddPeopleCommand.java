@@ -80,6 +80,8 @@ public class AddPeopleCommand implements Command {
 
 		} catch (Exception e) {
 			request.setAttribute("msgErro", e.getMessage());
+			String iduf = request.getParameter("uf");
+			proxima = "main?acao=add&getCidades=true&idUF=" + iduf ;
 		}
 
 		return proxima;

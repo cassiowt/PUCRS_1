@@ -10,8 +10,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.mysql.jdbc.Statement;
-
 import br.ages.crud.dto.CidadeDTO;
 import br.ages.crud.dto.EnderecoDTO;
 import br.ages.crud.dto.PessoaDTO;
@@ -19,6 +17,8 @@ import br.ages.crud.dto.PreferenciaDTO;
 import br.ages.crud.dto.UfDTO;
 import br.ages.crud.exception.PersistenciaException;
 import br.ages.crud.util.ConexaoUtil;
+
+import com.mysql.jdbc.Statement;
 
 /**
  * Classe de Data Access Object para os cadastros da aplicação
@@ -163,7 +163,7 @@ public class PessoaDAO {
 			// Cadastra a pessoa e gera e busca id gerado
 			PreparedStatement statement = conexao.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);
 			statement.setString(1, pessoaDTO.getNome());
-			statement.setFloat(2, Float.parseFloat(pessoaDTO.getCpf())); // duvida
+			statement.setString(2, pessoaDTO.getCpf()); // duvida
 			statement.setDate(3, dataNascimento);
 			statement.setString(4, String.valueOf(pessoaDTO.getSexo()));
 			statement.setString(5, pessoaDTO.getMiniBio());
@@ -181,6 +181,77 @@ public class PessoaDAO {
 			cadastrarPreferencia(pessoaDTO.getPreferencias(), idPessoa);
 
 		} catch (ClassNotFoundException | SQLException | ParseException e) {
+			throw new PersistenciaException(e);
+		} finally {
+			conexao.close();
+		}
+	}
+
+	/**
+	 * Atualização de pessoas na base
+	 * 
+	 * @param pessoaDTO
+	 * @throws ParseException
+	 * @throws PersistenciaException
+	 * @throws SQLException
+	 */
+	public void atualizarPessoa(PessoaDTO pessoaDTO) throws ParseException, PersistenciaException, SQLException {
+		Connection conexao = null;
+		try {
+			conexao = ConexaoUtil.getConexao();
+
+			StringBuilder sql = new StringBuilder();
+			sql.append("UPDATE TB_PESSOA ");
+			sql.append("SET NOME = ?, CPF = ?, DT_NASC = ?, SEXO = ?, MINI_BIO = ?, EMAIL = ? ");
+			sql.append("WHERE ID_PESSOA = ?");
+
+			java.sql.Date dataNascimento = new java.sql.Date(dateFormat.parse(pessoaDTO.getDataNascimento()).getTime());
+			
+			PreparedStatement statement = conexao.prepareStatement(sql.toString());
+			statement.setString(1, pessoaDTO.getNome());
+			statement.setString(2, pessoaDTO.getCpf());
+			statement.setDate(3, dataNascimento);
+			statement.setString(4, pessoaDTO.getSexo());
+			statement.setString(5, pessoaDTO.getMiniBio());
+			statement.setString(6, pessoaDTO.getEmail());
+			statement.setInt(7, pessoaDTO.getIdPessoa());
+
+			statement.executeUpdate();
+			removerPreferencias(pessoaDTO.getIdPessoa());
+			cadastrarPreferencia(pessoaDTO.getPreferencias(), pessoaDTO.getIdPessoa());
+
+			atualizarEndereco(pessoaDTO.getEndereco());
+
+		} catch (ClassNotFoundException | SQLException e) {
+			throw new PersistenciaException(e);
+		} finally {
+			conexao.close();
+		}
+	}
+
+	/**
+	 * Atualiza o endereço de uma pessoa
+	 * 
+	 * @param enderecoDTO
+	 * @throws PersistenciaException
+	 * @throws SQLException
+	 */
+	public void atualizarEndereco(EnderecoDTO enderecoDTO) throws PersistenciaException, SQLException {
+		Connection conexao = null;
+		try {
+			conexao = ConexaoUtil.getConexao();
+
+			StringBuilder sql = new StringBuilder();
+			sql.append("UPDATE TB_ENDERECO SET LOGRADOURO = ?, COD_CIDADE = ? ");
+			sql.append("WHERE ID_ENDERECO = ? ");
+
+			PreparedStatement statement = conexao.prepareStatement(sql.toString());
+			statement.setString(1, enderecoDTO.getLogradouro());
+			statement.setInt(2, enderecoDTO.getCidade().getIdCidade());
+			statement.setInt(3, enderecoDTO.getIdEndereco());
+
+			statement.executeUpdate();
+		} catch (ClassNotFoundException | SQLException e) {
 			throw new PersistenciaException(e);
 		} finally {
 			conexao.close();
@@ -326,7 +397,7 @@ public class PessoaDAO {
 	 * @throws SQLException
 	 */
 	public List<PreferenciaDTO> consultaPreferencias(Integer idPessoa) throws PersistenciaException, SQLException {
-		
+
 		List<PreferenciaDTO> listaPreferencias = new ArrayList<PreferenciaDTO>();
 		Connection conexao = null;
 		try {
@@ -364,60 +435,209 @@ public class PessoaDAO {
 	}
 
 	/**
-	 * Remove uma pessoa da base
+	 * Método de remoção de uma pessoa a partir do seu id.
 	 * 
-	 * @param pessoaDTO
+	 * @param idPessoa
 	 * @throws PersistenciaException
-	 * @throws SQLException
 	 */
-	public void removerPessoa(PessoaDTO pessoaDTO) throws PersistenciaException, SQLException {
+	public void removerPessoa(Integer idPessoa) throws PersistenciaException {
 		Connection conexao = null;
 		try {
+			PessoaDTO pessoaDTO = consultarPessoaPorId(idPessoa);
 
-			removerEndereco(pessoaDTO.getEndereco().getIdEndereco());
-
+			if (pessoaDTO.getPreferencias() != null && !pessoaDTO.getPreferencias().isEmpty()) {
+				removerPreferencias(pessoaDTO.getIdPessoa());
+			}
+			
 			conexao = ConexaoUtil.getConexao();
 
 			StringBuilder sql = new StringBuilder();
-			sql.append("DELETE FROM TB_PESSOA ID_PESSOA WHERE = ?");
+			sql.append("DELETE FROM TB_PESSOA WHERE ID_PESSOA = ?");
 
 			PreparedStatement statement = conexao.prepareStatement(sql.toString());
 			statement.setInt(1, pessoaDTO.getIdPessoa());
 
 			statement.execute();
+			
+			if (pessoaDTO.getEndereco() != null && pessoaDTO.getEndereco().getIdEndereco() != null) {
+				removerEndereco(pessoaDTO.getEndereco().getIdEndereco());
+			}
 		} catch (ClassNotFoundException | SQLException e) {
 			throw new PersistenciaException(e);
 		} finally {
-			conexao.close();
+			try {
+				conexao.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
-
 	}
 
 	/**
-	 * Remove endereço de pessoa da base pelo id
+	 * Método responsável por remover um endereço pelo seu id.
 	 * 
 	 * @param idEndereco
 	 * @throws PersistenciaException
-	 * @throws SQLException
 	 */
-	public void removerEndereco(Integer idEndereco) throws PersistenciaException, SQLException {
-
+	public void removerEndereco(Integer idEndereco) throws PersistenciaException {
 		Connection conexao = null;
 		try {
 			conexao = ConexaoUtil.getConexao();
 
 			StringBuilder sql = new StringBuilder();
-			sql.append("DELETE FROM TB_ENDERECO WHERE ID_ENDERCO = ?");
+			sql.append("DELETE FROM TB_ENDERECO WHERE ID_ENDERECO = ?");
 
 			PreparedStatement statement = conexao.prepareStatement(sql.toString());
 			statement.setInt(1, idEndereco);
+
+			statement.execute();
+		} catch (ClassNotFoundException | SQLException e) {
+			throw new PersistenciaException(e);
+		} finally {
+			try {
+				conexao.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/**
+	 * Método que remove a lista de preferências passada em relação ao id da
+	 * pessoa
+	 * 
+	 * @param idPessoa
+	 * @param preferencias
+	 * @throws PersistenciaException
+	 */
+	public void removerPreferencias(Integer idPessoa) throws PersistenciaException {
+		Connection conexao = null;
+		try {
+			conexao = ConexaoUtil.getConexao();
+
+			StringBuilder sql = new StringBuilder();
+			sql.append("DELETE FROM TB_PREFERENCIA_PESSOA WHERE  COD_PESSOA = ?");
+
+			PreparedStatement statement = conexao.prepareStatement(sql.toString());
+			statement.setInt(1, idPessoa);
 
 			statement.execute();
 
 		} catch (ClassNotFoundException | SQLException e) {
 			throw new PersistenciaException(e);
 		} finally {
-			conexao.close();
+			try {
+				conexao.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
+
+	/**
+	 * Método de consulta de uma pessoa pelo seu id.
+	 * 
+	 * @param idPessoa
+	 * @return
+	 * @throws PersistenciaException
+	 */
+	public PessoaDTO consultarPessoaPorId(Integer idPessoa) throws PersistenciaException {
+		PessoaDTO pessoaDTO = null;
+		Connection conexao = null;
+		try {
+			conexao = ConexaoUtil.getConexao();
+
+			StringBuilder sql = new StringBuilder();
+			sql.append("SELECT PE.ID_PESSOA, PE.NOME, PE.EMAIL, PE.CPF, PE.DT_NASC, PE.SEXO, PE.MINI_BIO,");
+			sql.append("	EN.ID_ENDERECO, EN.LOGRADOURO, CID.ID_CIDADE, CID.DESCRICAO AS DESC_CID, UF.ID_UF, UF.DESCRICAO AS DESC_UF");
+			sql.append(" FROM TB_PESSOA PE");
+			sql.append(" INNER JOIN TB_ENDERECO EN");
+			sql.append("	ON PE.COD_ENDERECO = EN.ID_ENDERECO");
+			sql.append("		INNER JOIN TB_CIDADE CID");
+			sql.append("			ON EN.COD_CIDADE = CID.ID_CIDADE");
+			sql.append("		INNER JOIN TB_UF UF");
+			sql.append("			ON CID.COD_ESTADO = UF.ID_UF");
+			sql.append(" WHERE ID_PESSOA = ?");
+
+			PreparedStatement statement = conexao.prepareStatement(sql.toString());
+			statement.setInt(1, idPessoa);
+			ResultSet resultSet = statement.executeQuery();
+			if (resultSet.first()) {
+				pessoaDTO = new PessoaDTO();
+				pessoaDTO.setIdPessoa(resultSet.getInt("id_pessoa"));
+				pessoaDTO.setNome(resultSet.getString("nome"));
+				pessoaDTO.setEmail(resultSet.getString("email"));
+				pessoaDTO.setCpf(resultSet.getString("cpf"));
+				pessoaDTO.setSexo(resultSet.getString("sexo"));
+				pessoaDTO.setMiniBio(resultSet.getString("mini_bio"));
+				pessoaDTO.setDataNascimento(dateFormat.format(resultSet.getDate("dt_nasc")));
+
+				EnderecoDTO enderecoDTO = new EnderecoDTO();
+				enderecoDTO.setIdEndereco(resultSet.getInt("id_endereco"));
+				enderecoDTO.setLogradouro(resultSet.getString("logradouro"));
+
+				CidadeDTO cidadeDTO = new CidadeDTO();
+				cidadeDTO.setIdCidade(resultSet.getInt("id_cidade"));
+				cidadeDTO.setDescricao(resultSet.getString("desc_cid"));
+
+				UfDTO ufDTO = new UfDTO();
+				ufDTO.setIdUF(resultSet.getInt("id_uf"));
+				ufDTO.setDescricao(resultSet.getString("desc_uf"));
+
+				enderecoDTO.setCidade(cidadeDTO);
+				cidadeDTO.setUfDTO(ufDTO);
+				pessoaDTO.setEndereco(enderecoDTO);
+
+				pessoaDTO.setPreferencias(consultarPreferencias(pessoaDTO.getIdPessoa()));
+			}
+		} catch (ClassNotFoundException | SQLException e) {
+			throw new PersistenciaException(e);
+		} finally {
+			try {
+				conexao.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return pessoaDTO;
+	}
+
+	public List<PreferenciaDTO> consultarPreferencias(Integer idPessoa) throws PersistenciaException {
+		List<PreferenciaDTO> listaPreferencias = new ArrayList<>();
+
+		Connection conexao = null;
+		try {
+			conexao = ConexaoUtil.getConexao();
+
+			StringBuilder sql = new StringBuilder();
+			sql.append("SELECT PRE.ID_PREFERENCIA, PRE.DESCRICAO FROM TB_PREFERENCIA PRE");
+			sql.append("	INNER JOIN TB_PREFERENCIA_PESSOA PREPES");
+			sql.append("		ON PRE.ID_PREFERENCIA = PREPES.COD_PREFERENCIA");
+			sql.append("	INNER JOIN TB_PESSOA PES");
+			sql.append("		ON PES.ID_PESSOA = PREPES.COD_PESSOA");
+			sql.append(" WHERE PES.ID_PESSOA = ?");
+
+			PreparedStatement statement = conexao.prepareStatement(sql.toString());
+			statement.setInt(1, idPessoa);
+
+			ResultSet resultSet = statement.executeQuery();
+			while (resultSet.next()) {
+				PreferenciaDTO preferenciaMusical = new PreferenciaDTO();
+				preferenciaMusical.setIdPreferencia(resultSet.getInt("id_preferencia"));
+				preferenciaMusical.setDescricao(resultSet.getString("descricao"));
+
+				listaPreferencias.add(preferenciaMusical);
+			}
+		} catch (ClassNotFoundException | SQLException e) {
+			throw new PersistenciaException(e);
+		} finally {
+			try {
+				conexao.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return listaPreferencias;
+	}
+
 }

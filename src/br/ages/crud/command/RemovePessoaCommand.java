@@ -5,7 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 import br.ages.crud.bo.PessoaBO;
 import br.ages.crud.exception.NegocioException;
 
-public class RemoverPessoaCommand implements Command {
+public class RemovePessoaCommand implements Command {
 
 	private String proximo;
 	

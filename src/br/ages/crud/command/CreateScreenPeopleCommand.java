@@ -11,7 +11,7 @@ import br.ages.crud.dto.PreferenciaDTO;
 import br.ages.crud.dto.UfDTO;
 import br.ages.crud.exception.PersistenciaException;
 
-public class AddCommand implements Command {
+public class CreateScreenPeopleCommand implements Command {
 
 	private String proxima;
 
@@ -21,6 +21,7 @@ public class AddCommand implements Command {
 
 		cadastroDao = new PessoaDAO();
 		
+		// Verifica se abre tela edição de pessoa ou de adição de pessoa.
 		String isEdit = request.getParameter("isEdit");
 		if (isEdit != null && !"".equals(isEdit)) {
 			proxima = "editPeople.jsp";
@@ -31,6 +32,7 @@ public class AddCommand implements Command {
 		String getCidades = request.getParameter("getCidades");
 
 		try {
+			// Monta lista de Cidades
 			if (getCidades != null && !"".equals(getCidades)) {
 				String id = request.getParameter("idUF");
 				int idUF = Integer.parseInt(id);
@@ -39,6 +41,7 @@ public class AddCommand implements Command {
 				request.setAttribute("listaCidades", listaCidades);
 
 			} else {
+				// Monta as lista de Estados e Preferências
 				List<UfDTO> listaUFs = cadastroDao.listarUFs();
 				List<PreferenciaDTO> listaPreferencias = cadastroDao.listarPreferencias();
 				request.getSession().setAttribute("listaUF", listaUFs);

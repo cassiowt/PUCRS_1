@@ -10,13 +10,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import br.ages.crud.command.CreateScreenPeopleCommand;
 import br.ages.crud.command.AddPeopleCommand;
 import br.ages.crud.command.Command;
+import br.ages.crud.command.CreateScreenPeopleCommand;
 import br.ages.crud.command.EditPeopleCommand;
 import br.ages.crud.command.ListPeopleCommand;
 import br.ages.crud.command.ListUserCommand;
 import br.ages.crud.command.LoginCommand;
+import br.ages.crud.command.LogoutCommand;
 import br.ages.crud.command.RemovePessoaCommand;
 import br.ages.crud.command.UpdatePeopleCommand;
 
@@ -29,6 +30,7 @@ public class MainServlet extends HttpServlet {
 	@Override
 	public void init() throws ServletException {
 		comandos.put("login", new LoginCommand());
+		comandos.put("logout", new LogoutCommand());
 		comandos.put("add", new CreateScreenPeopleCommand());
 		comandos.put("addPeople", new AddPeopleCommand());
 		comandos.put("list", new ListPeopleCommand());

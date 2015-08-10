@@ -24,13 +24,14 @@ public class LoginCommand implements Command {
 
 		try {
 			if (usuarioBO.validaUsuario(usuarioDTO)) {
+				request.getSession().setAttribute("usuario", usuarioDTO);
 				proxima = "index.jsp";
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			request.setAttribute("msgErro", e.getMessage());
 		}
-		request.getSession().setAttribute("usuario", usuarioDTO);
+		
 		return proxima;
 	}
 }
